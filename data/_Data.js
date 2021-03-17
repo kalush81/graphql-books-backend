@@ -3,4 +3,13 @@ const books = [
     {name: 'Chlopcy z placu broni', genre: 'history', id: '2'},
     {name: 'How to be a better person', genre: 'psychology', id: '3'}
 ]
-module.exports = books;
+
+const authors = [
+    {name: 'Boleslaw Prus', age: 100, id: '1'},
+    {name: 'Stephen King', age: 70, id: '2'},
+    {name: 'Philip Kerr', age: 60, id: '3'}
+]
+module.exports = {
+    books,
+    authors
+};
