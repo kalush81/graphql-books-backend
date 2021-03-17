@@ -1,4 +1,5 @@
 const graphql = require("graphql");
+const books = require('../data/_Data');
 
 const { GraphQLObjectType, GraphQLString, GraphQLSchema } = graphql;
 
@@ -16,8 +17,10 @@ const RootQuery = new GraphQLObjectType({
   fields: {
     book: {
         type: BookType,
-        args: {id: {type: GraphQLString}},
-        resolve(parent, args) {}
+        args: {id: {type: GraphQLString}, name: {type: GraphQLString} },
+        resolve(parent, args) {
+            return books.find(book => book.id === args.id)
+        }
     },
   },
 });
