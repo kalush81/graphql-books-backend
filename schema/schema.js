@@ -1,6 +1,7 @@
 const graphql = require("graphql");
 const Book = require("../models/book");
 const Author = require("../models/author");
+const Hobby = require("../models/hobby");
 
 //const { books, authors } = require("../data/_Data");
 
@@ -43,6 +44,15 @@ const AuthorType = new GraphQLObjectType({
   }),
 });
 
+const HobbyType = new GraphQLObjectType({
+  name: "Hobby",
+  fields: () => ({
+    id: { type: GraphQLID },
+    title: { type: GraphQLString },
+    body: { type: GraphQLString },
+  }),
+});
+
 const RootQuery = new GraphQLObjectType({
   name: "RootQueryType",
   fields: {
@@ -59,6 +69,13 @@ const RootQuery = new GraphQLObjectType({
       resolve(parent, args) {
         return Author.findById(args.id)
       },
+    },
+    hobby: {
+      type: HobbyType,
+      args: { title: { type: GraphQLString } },
+      resolve(parent, args) {
+        return Hobby.find({title: args.title})
+      }
     },
     allBooks: {
       type: new GraphQLList(BookType),
@@ -89,7 +106,9 @@ const Mutation = new GraphQLObjectType({
           name: args.name,
           age: args.age,
         });
-        return author.save();
+        return author.save((err, author) => {
+          author.log();
+        });
       },
     },
     addBook: {
@@ -108,6 +127,20 @@ const Mutation = new GraphQLObjectType({
         return book.save();
       },
     },
+    addHobby: {
+      type: HobbyType,
+      args: {
+        title: {type: GraphQLString },
+        body: {type: GraphQLString}
+      },
+      resolve(parent, args) {
+        let hobby = new Hobby({
+          title: args.title,
+          body: args.body
+        })
+        return hobby.save()
+      }
+    }
   },
 });
 

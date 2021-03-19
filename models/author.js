@@ -1,9 +1,12 @@
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
 
-const authorSchema = new Schema({
+const authorSchema = new mongoose.Schema({
     name: String,
     age: Number,
 })
+
+authorSchema.methods.log = function() {
+    console.log(`${this.name} created`)
+}
 
 module.exports = mongoose.model("Author", authorSchema)
