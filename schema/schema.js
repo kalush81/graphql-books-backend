@@ -130,8 +130,8 @@ const Mutation = new GraphQLObjectType({
     addHobby: {
       type: HobbyType,
       args: {
-        title: {type: GraphQLString },
-        body: {type: GraphQLString}
+        title: {type: new graphql.GraphQLNonNull(GraphQLString) },
+        body: {type: GraphQLString, defaultValue: 'I am placeholder default value'}
       },
       resolve(parent, args) {
         let hobby = new Hobby({
