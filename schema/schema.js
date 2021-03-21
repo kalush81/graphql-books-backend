@@ -3,8 +3,6 @@ const Book = require("../models/book");
 const Author = require("../models/author");
 const Hobby = require("../models/hobby");
 
-//const { books, authors } = require("../data/_Data");
-
 const {
   GraphQLObjectType,
   GraphQLString,
@@ -116,7 +114,7 @@ const Mutation = new GraphQLObjectType({
       args: {
         title: { type: GraphQLString },
         genre: { type: GraphQLString },
-        authorId: { type: GraphQLID },
+        authorId: { type: new graphql.GraphQLNonNull(GraphQLID) },
       },
       resolve(parent, args) {
         let book = new Book({
