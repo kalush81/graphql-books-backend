@@ -1,7 +1,7 @@
 const graphql = require("graphql");
 const Book = require("../models/book");
 const Author = require("../models/author");
-const Hobby = require("../models/hobby");
+const Review = require("../models/review");
 
 const {
   GraphQLObjectType,
@@ -10,6 +10,7 @@ const {
   GraphQLID,
   GraphQLInt,
   GraphQLList,
+  GraphQLNonNull,
 } = graphql;
 
 const BookType = new GraphQLObjectType({
@@ -21,9 +22,15 @@ const BookType = new GraphQLObjectType({
     author: {
       type: AuthorType,
       resolve(parent, args) {
-        return Author.findById(parent.authorId)
+        return Author.findById(parent.authorId);
       },
     },
+    reviews: {
+      type: new GraphQLList(ReviewType),
+      resolve(parent, args) {
+        return Review.find({ bookId: parent.id  })
+      } 
+    }
   }),
 });
 
@@ -36,19 +43,18 @@ const AuthorType = new GraphQLObjectType({
     books: {
       type: new GraphQLList(BookType),
       resolve(parent, args) {
-        return Book.find({authorId: parent.id})
+        return Book.find({ authorId: parent.id });
       },
     },
   }),
 });
 
-const HobbyType = new GraphQLObjectType({
-  name: "Hobby",
+const ReviewType = new GraphQLObjectType({
+  name: "Review",
   fields: () => ({
     id: { type: GraphQLID },
-    title: { type: GraphQLString },
-    body: { type: GraphQLString },
-  }),
+    body: { type: GraphQLString }
+  })
 });
 
 const RootQuery = new GraphQLObjectType({
@@ -58,33 +64,40 @@ const RootQuery = new GraphQLObjectType({
       type: BookType,
       args: { id: { type: GraphQLID } },
       resolve(parent, args) {
-        return Book.findById(args.id)
+        return Book.findById(args.id);
       },
     },
     author: {
       type: AuthorType,
       args: { id: { type: GraphQLID } },
       resolve(parent, args) {
-        return Author.findById(args.id)
+        return Author.findById(args.id);
       },
     },
-    hobby: {
-      type: HobbyType,
-      args: { title: { type: GraphQLString } },
+    review: {
+      type: ReviewType,
+      args: { id: {  type: GraphQLID } },
       resolve(parent, args) {
-        return Hobby.find({title: args.title})
+        return Review.findById(args.id)
       }
     },
+    // hobby: {
+    //   type: HobbyType,
+    //   args: { title: { type: GraphQLString } },
+    //   resolve(parent, args) {
+    //     return Hobby.find({ title: args.title });
+    //   },
+    // },
     allBooks: {
       type: new GraphQLList(BookType),
       resolve(parent, args) {
-          return Book.find({});
+        return Book.find({});
       },
     },
     allAuthors: {
       type: new GraphQLList(AuthorType),
       resolve(parent, args) {
-          return Author.find({});
+        return Author.find({});
       },
     },
   },
@@ -112,11 +125,14 @@ const Mutation = new GraphQLObjectType({
     addBook: {
       type: BookType,
       args: {
-        title: { type: GraphQLString },
+        title: { type: new GraphQLNonNull(GraphQLString) },
         genre: { type: GraphQLString },
-        authorId: { type: new graphql.GraphQLNonNull(GraphQLID) },
+        authorId: { type: new GraphQLNonNull(GraphQLID) },
       },
       resolve(parent, args) {
+        if (args.title.length < 1 || args.genre.length < 1) {
+          throw new Error("empty string not allowed");
+        }
         let book = new Book({
           title: args.title,
           genre: args.genre,
@@ -125,20 +141,37 @@ const Mutation = new GraphQLObjectType({
         return book.save();
       },
     },
-    addHobby: {
-      type: HobbyType,
+    addReview: {
+      type: ReviewType,
       args: {
-        title: {type: new graphql.GraphQLNonNull(GraphQLString) },
-        body: {type: GraphQLString, defaultValue: 'I am placeholder default value'}
+        body: { type: GraphQLString},
+        bookId: {type: GraphQLID}
       },
       resolve(parent, args) {
-        let hobby = new Hobby({
-          title: args.title,
-          body: args.body
-        })
-        return hobby.save()
+        let review = new Review({
+          body: args.body,
+          bookId: args.bookId,
+        });
+        return review.save();
       }
     }
+    // addHobby: {
+    //   type: HobbyType,
+    //   args: {
+    //     title: { type: new GraphQLNonNull(GraphQLString) },
+    //     body: {
+    //       type: GraphQLString,
+    //       defaultValue: "I am placeholder default value",
+    //     },
+    //   },
+    //   resolve(parent, args) {
+    //     let hobby = new Hobby({
+    //       title: args.title,
+    //       body: args.body,
+    //     });
+    //     return hobby.save();
+    //   },
+    // },
   },
 });
 
